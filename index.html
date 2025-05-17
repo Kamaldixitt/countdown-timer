@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Countdown Timer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #1cb5e0, #000046);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .countdown-container {
+      text-align: center;
+      max-width: 400px;
+      z-index: 1;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 1rem;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .timer {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .timer div {
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      min-width: 60px;
+    }
+
+    .timer span {
+      font-size: 1.5rem;
+      display: block;
+    }
+
+    .timer small {
+      color: #aaa;
+      font-size: 0.8rem;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <div class="countdown-container">
+    <h1>Custom Countdown Timer</h1>
+    <label for="datetime">Pick Date & Time:</label><br/>
+    <input type="datetime-local" id="datetime" />
+    <br/>
+    <button onclick="startCountdown()">Start Countdown</button>
+    <p id="target-date"></p>
+    <div class="timer" id="timer" style="display:none;">
+      <div><span id="days">00</span><small>Days</small></div>
+      <div><span id="hours">00</span><small>Hours</small></div>
+      <div><span id="minutes">00</span><small>Minutes</small></div>
+      <div><span id="seconds">00</span><small>Seconds</small></div>
+    </div>
+  </div>
+
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    let countdownInterval;
+
+    function startCountdown() {
+      const input = document.getElementById("datetime").value;
+      const targetDate = new Date(input);
+
+      if (!input || isNaN(targetDate)) {
+        alert("Please select a valid date and time.");
+        return;
+      }
+
+      document.getElementById("target-date").textContent =
+        "Counting down to: " + targetDate.toLocaleString();
+
+      document.getElementById("timer").style.display = "flex";
+
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => updateCountdown(targetDate), 1000);
+      updateCountdown(targetDate);
+    }
+
+    function updateCountdown(targetDate) {
+      const now = new Date();
+      const timeLeft = targetDate - now;
+
+      if (timeLeft <= 0) {
+        clearInterval(countdownInterval);
+        document.getElementById("timer").innerHTML = "<h2>🎉 Time's up! 🎉</h2>";
+        launchConfetti();
+        return;
+      }
+
+      const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+      const seconds = Math.floor((timeLeft / 1000) % 60);
+
+      document.getElementById("days").textContent = String(days).padStart(2, '0');
+      document.getElementById("hours").textContent = String(hours).padStart(2, '0');
+      document.getElementById("minutes").textContent = String(minutes).padStart(2, '0');
+      document.getElementById("seconds").textContent = String(seconds).padStart(2, '0');
+    }
+
+    function launchConfetti() {
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 45, spread: 360, ticks: 80, zIndex: 0, scalar: 1.2 };
+
+      const interval = setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 200 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, {
+          particleCount,
+          origin: { x: 0.5, y: 0.5 }
+        }));
+      }, 150);
+    }
+  </script>
+</body>
+</html>
